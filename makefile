@@ -1,5 +1,5 @@
 all: src/main.o src/dinamico.o src/guloso.o src/core.o
-	gcc -O3 src/main.o src/dinamico.o src/guloso.o src/core.o -o tp1
+	gcc -O3 src/main.o src/dinamico.o src/guloso.o src/core.o -o tp2
 	make clean
 	clear
 
