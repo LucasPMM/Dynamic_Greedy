@@ -1,3 +1,6 @@
+#include "dinamico.h"
+#include "guloso.h"
+
 // #1)
 void initProgram (FILE *file);
 // #2)

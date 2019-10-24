@@ -58,6 +58,10 @@ void initProgram (FILE *file) {
     printAllInformations(N, M, custos, pontuacoes);
 
 
+    // TODO: criar um array de struct para armazenar as informações de cada ilha (tanto o preço quanto a pontuação)
+
+    initGreedSoluction(N, M, custos, pontuacoes);
+
     free(custos);
     free(pontuacoes);
 }
