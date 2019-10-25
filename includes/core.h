@@ -4,4 +4,4 @@
 // #1)
 void initProgram (FILE *file);
 // #2)
-void printAllInformations(int N, int M, int *custos, int *pontuacoes);
+void printAllInformations(int N, int M, int *costs, int *pontuations);

@@ -5,12 +5,12 @@
 
 #define SIZE 500
 
-void printAllInformations(int N, int M, int *custos, int *pontuacoes) {
+void printAllInformations(int N, int M, int *costs, int *pontuations) {
     printf("\nValor total a ser gasto: %d", N);
     printf("\nNúmero total de ilhas: %d", M);
     printf("\nCustos:\n");
     for (int i = 0; i < M; i++) {
-        printf("%d\t%d\n", custos[i], pontuacoes[i]);
+        printf("%d\t%d\n", costs[i], pontuations[i]);
     }
 }
 
@@ -20,7 +20,7 @@ void initProgram (FILE *file) {
     // Variaveis com as informações informação:
     // N -> valor máximo a ser gasto
     // M -> número de ilhas
-    int N, M, *custos, *pontuacoes;
+    int N, M, *costs, *pontuations;
 
     int charCtrl = 0, infoCtrl = 0;
     char linhaAlfanumerica[SIZE], *info;
@@ -37,14 +37,14 @@ void initProgram (FILE *file) {
             else if (charCtrl == 1) { // Númemro de ilhas
                 M = atoi(info);
                 if (!M) { return; }
-                custos = (int*)calloc(M, sizeof(int));
-                pontuacoes = (int*)calloc(M, sizeof(int));
+                costs = (int*)calloc(M, sizeof(int));
+                pontuations = (int*)calloc(M, sizeof(int));
             }
-            else if (charCtrl > 1) { // Custos e pontuações
+            else if (charCtrl > 1) { // custos e pontuações
                 if (charCtrl % 2 == 0) { // Custo da i-esima ilha
-                    custos[infoCtrl] = atoi(info);
+                    costs[infoCtrl] = atoi(info);
                 } else { // Pontuação da i-esima ilha
-                    pontuacoes[infoCtrl] = atoi(info);
+                    pontuations[infoCtrl] = atoi(info);
                     infoCtrl++;
                 }
             }
@@ -55,13 +55,10 @@ void initProgram (FILE *file) {
     }
 
     // --------------------------------------------------------------------------------------------------------------- // 
-    printAllInformations(N, M, custos, pontuacoes);
+    printAllInformations(N, M, costs, pontuations);
 
+    initGreedSoluction(N, M, costs, pontuations);
 
-    // TODO: criar um array de struct para armazenar as informações de cada ilha (tanto o preço quanto a pontuação)
-
-    initGreedSoluction(N, M, custos, pontuacoes);
-
-    free(custos);
-    free(pontuacoes);
+    free(costs);
+    free(pontuations);
 }

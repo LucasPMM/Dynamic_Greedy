@@ -1,29 +1,24 @@
 #include<stdlib.h> 
 #include<stdio.h> 
+#include "../includes/guloso.h"
 
-// Merges two subarrays of arr[]. 
-// First subarray is arr[l..m] 
-// Second subarray is arr[m+1..r] 
-void merge(float *arr, int l, int m, int r) { 
+void merge(GreedyIsland *arr, int l, int m, int r) { 
 	int i, j, k; 
 	int n1 = m - l + 1; 
 	int n2 = r - m; 
 
-	/* create temp arrays */
-	int L[n1], R[n2]; 
+	GreedyIsland L[n1], R[n2]; 
 
-	/* Copy data to temp arrays L[] and R[] */
 	for (i = 0; i < n1; i++) 
 		L[i] = arr[l + i]; 
 	for (j = 0; j < n2; j++) 
 		R[j] = arr[m + 1+ j]; 
 
-	/* Merge the temp arrays back into arr[l..r]*/
-	i = 0; // Initial index of first subarray 
-	j = 0; // Initial index of second subarray 
-	k = l; // Initial index of merged subarray 
+	i = 0; 
+	j = 0; 
+	k = l; 
 	while (i < n1 && j < n2) { 
-		if (L[i] <= R[j]) { 
+		if (L[i].custoPerPontuation <= R[j].custoPerPontuation) { 
 			arr[k] = L[i]; 
 			i++; 
 		} 
@@ -34,16 +29,12 @@ void merge(float *arr, int l, int m, int r) {
 		k++; 
 	} 
 
-	/* Copy the remaining elements of L[], if there 
-	are any */
 	while (i < n1) { 
 		arr[k] = L[i]; 
 		i++; 
 		k++; 
 	} 
 
-	/* Copy the remaining elements of R[], if there 
-	are any */
 	while (j < n2) { 
 		arr[k] = R[j]; 
 		j++; 
@@ -51,86 +42,43 @@ void merge(float *arr, int l, int m, int r) {
 	} 
 } 
 
-void mergeSort(float *arr, int l, int r) { 
+void mergeSort(GreedyIsland *arr, int l, int r) { 
 	if (l < r) { 
-		// Same as (l+r)/2, but avoids overflow for 
-		// large l and h 
 		int m = l+(r-l)/2; 
-
-		// Sort first and second halves 
 		mergeSort(arr, l, m); 
 		mergeSort(arr, m+1, r); 
-
 		merge(arr, l, m, r); 
 	} 
 } 
 
-void printArray(float *A, int size) { 
-	int i; 
-	for (i=0; i < size; i++) 
-		printf("%f ", A[i]); 
-	printf("\n"); 
+void calcTripInformations(GreedyIsland *islands, int budget, int numberOfIslands) {
+    int pontuation = 0, days = 0, spent = 0, i;
+
+    for (i = 0; i < numberOfIslands; i++) {
+        int dayQtd = (budget - spent) / islands[i].cost;
+        days += dayQtd;
+        pontuation += islands[i].pontuation * dayQtd;
+        spent += islands[i].cost * dayQtd;
+    }
+    printf("%d %d\n", pontuation, days);
 }
 
-void printFloat(float *A, int size) { 
-	int i; 
-	for (i=0; i < size; i++) 
-		printf("%f ", A[i]); 
-	printf("\n"); 
-}
-
-float *calcPricePerPoints(int *custos, int *pontuacoes, int size) {
+void fillObject(GreedyIsland *islands, int *costs, int *pontuations, int size) {
     int i;
-    float *custoPorPontuacao;
-    custoPorPontuacao = (float*)calloc(size, sizeof(float));
-
     for (i = 0; i < size; i++) {
-        custoPorPontuacao[i] = custos[i] / pontuacoes[i];
+        islands[i].cost = costs[i];
+        islands[i].pontuation = pontuations[i];
+        islands[i].custoPerPontuation = (double)costs[i] / (double)pontuations[i];
     }
-
-    return custoPorPontuacao;
 }
 
-void calcTripDays(float *custoPorPontuacao, int *custos, int *pontuacoes, int orcamento, int ilhas) {
-    int pontuacao = 0, dias = 0, gasto = 0, i;
+void initGreedSoluction(int N, int M, int *costs, int *pontuations) {
+    GreedyIsland *islands;
+    islands = (GreedyIsland*)calloc(M, sizeof(GreedyIsland));
+    fillObject(islands, costs, pontuations, M);
 
-    for (i = 0; i < ilhas; i++) {
-        int dayQtd = (orcamento - gasto) /custos[i];
-        dias += dayQtd;
-        pontuacao += pontuacoes[i] * dayQtd;
-        gasto += custos[i] * dayQtd;
-    }
-    printf("%d %d\n", pontuacao, dias);
-}
+	mergeSort(islands, 0, M - 1); 
 
-// void calcTripDays(float *custoPorPontuacao, int *custos, int *pontuacoes, int orcamento, int ilhas) {
-//     int pontuacao = 0, dias = 0, gasto = 0, i, islandCtrl = 0;
-//     while (gasto < orcamento && islandCtrl != ilhas) {
-//         for (i = 0; i < ilhas; i++) {
-//             if (custoPorPontuacao[islandCtrl] == custos[i] / pontuacoes[i]) {
-//                 int dayQtd = (orcamento - gasto) /custos[i];
-//                 dias += dayQtd;
-//                 pontuacao += pontuacoes[i] * dayQtd;
-//                 gasto += custos[i] * dayQtd;
-//                 islandCtrl++;
-//                 break;
-//             }
-//         }
-//     }
-//     printf("%d %d\n", pontuacao, dias);
-// }
-
-void initGreedSoluction(int N, int M, int *custos, int *pontuacoes) {
-    float *custoPorPontuacao;
-    custoPorPontuacao = calcPricePerPoints(custos, pontuacoes, M);
-
-	mergeSort(custoPorPontuacao, 0, M - 1); 
-
-    int arr1[] = {1000, 2200, 5000, 2000, 500}; 
-    int arr2[] = {30, 45, 90, 32, 4}; 
-
-
-    calcTripDays(custoPorPontuacao, arr1, arr2, N, M);
-
-    free(custoPorPontuacao);
+    calcTripInformations(islands, N, M);
+    free(islands);
 } 
