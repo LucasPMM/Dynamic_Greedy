@@ -1,1 +1,1 @@
-// Algoritmo usando programação dinamica
+void initDynamicSoluction(int N, int M, int *costs, int *pontuations);
