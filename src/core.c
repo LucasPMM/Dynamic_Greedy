@@ -1,25 +1,26 @@
 #include <stdio.h>
-#include "../includes/core.h"
 #include <stdlib.h>
 #include <string.h>
+#include "../includes/core.h"
 
 #define SIZE 500
 
-// Init dynamic solution
+// ---------------------------- Init Dynamic Solution ---------------------------- //
 
 int max(int a, int b) { return (a > b) ? a : b; }
 
-void knapSack(int **K, int W, int wt[], int val[], int n, Island *islands) {
+void knapSack(int **K, int W, int wt[], int val[], int n, Island *islands, int *daysDynamic, int *pontuationDynamic) {
     int i, j, w;
 
     for (i = 0; i <= n; i++) {
         for (w = 0; w <= W; w++) {
-            if (i == 0 || w == 0)
+            if (i == 0 || w == 0) {
                 K[i][w] = 0;
-            else if (wt[i - 1] <= w)
+            } else if (wt[i - 1] <= w) {
                 K[i][w] = max(val[i - 1] + K[i - 1][w - wt[i - 1]], K[i - 1][w]);
-            else
+            } else {
                 K[i][w] = K[i - 1][w];
+            }
         }
     }
 
@@ -29,31 +30,35 @@ void knapSack(int **K, int W, int wt[], int val[], int n, Island *islands) {
 	while(i >= 1) {
 		if(K[i][j] != K[i-1][j]) {
 			days++;
-			j = (int)(j-islands[i-1].cost);
+			j = j - islands[i-1].cost;
 		}
 		i--;
 	}
 
-    printf("%d %d\n", K[n][W], days);
+    *daysDynamic = days;
+    *pontuationDynamic = K[n][W];
 }
 
-void initDynamicSoluction(Island *islands, int N, int M, int *costs, int *pontuations) {
+void initDynamicSolution(Island *islands, int N, int M, int *costs, int *pontuations, int *daysDynamic, int *pontuationDynamic) {
     int i;
+    // Allocate matrix
     int **K = (int**)calloc(M + 1, sizeof(int*)); 
     for (i = 0; i < M + 1; i++) 
         K[i] = (int*)calloc(N + 1, sizeof(int)); 
 
-    knapSack(K, N, costs, pontuations, M, islands);
+    knapSack(K, N, costs, pontuations, M, islands, daysDynamic, pontuationDynamic);
 
-    for (i = 0; i < M; i++) {
+    // Free matrix
+    for (i = 0; i < M + 1; i++) {
         free(K[i]);
     }
     free(K);
 }
 
-// Finish Dynamic solution
+// ---------------------------- Finish Dynamic Solution ---------------------------- //
 
-// Init greedy solution
+// ------------------------------ Init Greedy Solution ----------------------------- //
+
 void merge(Island *arr, int l, int m, int r) { 
 	int i, j, k; 
 	int n1 = m - l + 1; 
@@ -61,10 +66,8 @@ void merge(Island *arr, int l, int m, int r) {
 
 	Island L[n1], R[n2]; 
 
-	for (i = 0; i < n1; i++) 
-		L[i] = arr[l + i]; 
-	for (j = 0; j < n2; j++) 
-		R[j] = arr[m + 1+ j]; 
+	for (i = 0; i < n1; i++) { L[i] = arr[l + i]; }
+	for (j = 0; j < n2; j++) { R[j] = arr[m + 1+ j]; }
 
 	i = 0; 
 	j = 0; 
@@ -103,7 +106,7 @@ void mergeSort(Island *arr, int l, int r) {
 	} 
 } 
 
-void calcTripInformations(Island *islands, int budget, int numberOfIslands) {
+void calcTripInformations(Island *islands, int budget, int numberOfIslands, int *daysGreedy, int *pontuationsGreedy) {
     int pontuation = 0, days = 0, spent = 0, i;
 
     for (i = 0; i < numberOfIslands; i++) {
@@ -112,15 +115,17 @@ void calcTripInformations(Island *islands, int budget, int numberOfIslands) {
         pontuation += islands[i].pontuation * dayQtd;
         spent += islands[i].cost * dayQtd;
     }
-    printf("%d %d\n", pontuation, days);
+
+    *daysGreedy = days;
+    *pontuationsGreedy = pontuation; 
 }
 
-void initGreedSoluction(Island *islands, int N, int M, int *costs, int *pontuations) {
+void initGreedSolution(Island *islands, int N, int M, int *costs, int *pontuations, int *daysGreedy, int *pontuationGreedy) {
 	mergeSort(islands, 0, M - 1); 
-    calcTripInformations(islands, N, M);
+    calcTripInformations(islands, N, M, daysGreedy, pontuationGreedy);
 } 
 
-// finish greedy solution 
+// ---------------------------- Finish Greedy Solution ---------------------------- //
 
 void fillObject(Island *islands, int *costs, int *pontuations, int size) {
     int i;
@@ -132,22 +137,21 @@ void fillObject(Island *islands, int *costs, int *pontuations, int size) {
 }
 
 void initProgram (FILE *file) {
-    // Leitura de dados
+    // Read data:
 
-    // Variaveis com as informações informação:
-    // N -> valor máximo a ser gasto
-    // M -> número de ilhas
+    // N -> Max value to spend
+    // M -> Number of islands
     int N, M, *costs, *pontuations;
 
     int charCtrl = 0, infoCtrl = 0;
     char linhaAlfanumerica[SIZE], *info;
 
-    // Extração de informações:
+    // Extract informations:
 
     while(fscanf(file, "%s", linhaAlfanumerica) != EOF) {
         info = strtok(linhaAlfanumerica, " ");
         while (info != NULL) {
-            if (charCtrl == 0) { // Valor máximo a ser gasto
+            if (charCtrl == 0) { // Max value to spend
                 N = atoi(info);
                 if (!N) { return; }
             }
@@ -157,10 +161,10 @@ void initProgram (FILE *file) {
                 costs = (int*)calloc(M, sizeof(int));
                 pontuations = (int*)calloc(M, sizeof(int));
             }
-            else if (charCtrl > 1) { // custos e pontuações
-                if (charCtrl % 2 == 0) { // Custo da i-esima ilha
+            else if (charCtrl > 1) { // costs and pontuations
+                if (charCtrl % 2 == 0) { // Cost of i-esima island
                     costs[infoCtrl] = atoi(info);
-                } else { // Pontuação da i-esima ilha
+                } else { // Pontuation of i-esima island
                     pontuations[infoCtrl] = atoi(info);
                     infoCtrl++;
                 }
@@ -173,20 +177,21 @@ void initProgram (FILE *file) {
 
     // Fill structures and find solutions
 
-    Island *greedIslands;
-    greedIslands = (Island*)calloc(M, sizeof(Island));
-    fillObject(greedIslands, costs, pontuations, M);
-    initGreedSoluction(greedIslands, N, M, costs, pontuations);
+    int daysGreedy, pontuationGreedy;
+    int daysDynamic, pontuationDynamic;
 
-    // We have to create another structure to prevent errors generated by mergesort
-    Island *dynamicIsland;
-    dynamicIsland = (Island*)calloc(M, sizeof(Island));
-    fillObject(dynamicIsland, costs, pontuations, M);
-    initDynamicSoluction(dynamicIsland, N, M, costs, pontuations);
+    Island *islands;
+    islands = (Island*)calloc(M, sizeof(Island));
+    fillObject(islands, costs, pontuations, M);
+
+    initDynamicSolution(islands, N, M, costs, pontuations, &daysDynamic, &pontuationDynamic);
+    initGreedSolution(islands, N, M, costs, pontuations, &daysGreedy, &pontuationGreedy);
+
+    printf("%d %d\n", pontuationGreedy, daysGreedy);
+    printf("%d %d\n", pontuationDynamic, daysDynamic);
 
     // Free memory
     free(costs);
     free(pontuations);
-    free(greedIslands);
-    free(dynamicIsland);
+    free(islands);
 }

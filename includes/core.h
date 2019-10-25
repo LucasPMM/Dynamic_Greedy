@@ -1,29 +1,31 @@
+// Struct that represents the island
 typedef struct {
     int cost;
     int pontuation;
-    double custoPerPontuation;
+    double custoPerPontuation; // == cost / pontuation
 } Island;
+
 
 // Dynamic functions:
 
-// #1)
+// #1) Return the max value between a and b
 int max(int a, int b);
-// #2)
-void knapSack(int **K, int W, int wt[], int val[], int n, Island *islands);
-// #3)
-void initDynamicSoluction(Island *islands, int N, int M, int *costs, int *pontuations);
+// #2) Run knapSack to find the optimal solution 
+void knapSack(int **K, int W, int wt[], int val[], int n, Island *islands, int *daysDynamic, int *pontuationDynamic);
+// #3) Start the dynamic programing process
+void initDynamicSolution(Island *islands, int N, int M, int *costs, int *pontuations, int *daysDynamic, int *pontuationDynamic);
 
 
 // Greedy functions:
 
-// #1)
+// #1) Sort object of islands
 void merge(Island *arr, int l, int m, int r);
-// #2)
+// #2) Sort object of islands
 void mergeSort(Island *arr, int l, int r);
-// #3)
-void calcTripInformations(Island *islands, int budget, int numberOfIslands);
-// #4)
-void initGreedSoluction(Island *islands, int N, int M, int *costs, int *pontuations);
+// #3) Calc solution for greedy process
+void calcTripInformations(Island *islands, int budget, int numberOfIslands, int *daysGreedy, int *pontuationsGreedy);
+// #4) Start the greedy programing process
+void initGreedSolution(Island *islands, int N, int M, int *costs, int *pontuations, int *daysGreedy, int *pontuationGreedy);
 
 
 // Utils functions:
