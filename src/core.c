@@ -54,9 +54,6 @@ void initProgram (FILE *file) {
 
     }
 
-    // --------------------------------------------------------------------------------------------------------------- // 
-    printAllInformations(N, M, costs, pontuations);
-
     initGreedSoluction(N, M, costs, pontuations);
     initDynamicSoluction(N, M, costs, pontuations);
 

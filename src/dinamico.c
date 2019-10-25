@@ -16,8 +16,8 @@ void printMatrix(int **mat, int m, int n) {
     printf("\n");
 }
 
-int knapSack(int **K, int W, int wt[], int val[], int n) {
-    int i, w;
+void knapSack(int **K, int W, int wt[], int val[], int n, DynamicIsland *islands) {
+    int i, j, w;
 
     for (i = 0; i <= n; i++) {
         for (w = 0; w <= W; w++) {
@@ -30,7 +30,27 @@ int knapSack(int **K, int W, int wt[], int val[], int n) {
         }
     }
 
-    return K[n][W];
+	i = n;
+	j = W;
+    int days = 0;
+	while(i >= 1) {
+		if(K[i][j] != K[i-1][j]) {
+			days++;
+			j = (int)(j-islands[i-1].cost);
+		}
+		i--;
+	}
+
+    printf("%d %d\n", K[n][W], days);
+}
+
+void fillObjectDynamic(DynamicIsland *islands, int *costs, int *pontuations, int size) {
+    int i;
+    for (i = 0; i < size; i++) {
+        islands[i].cost = costs[i];
+        islands[i].pontuation = pontuations[i];
+        islands[i].custoPerPontuation = (double)costs[i] / (double)pontuations[i];
+    }
 }
 
 void initDynamicSoluction(int N, int M, int *costs, int *pontuations) {
@@ -39,8 +59,14 @@ void initDynamicSoluction(int N, int M, int *costs, int *pontuations) {
     for (i = 0; i < M + 1; i++) 
         K[i] = (int*)calloc(N + 1, sizeof(int)); 
 
-    printf("\nsolução knapSack %d\n", knapSack(K, N, costs, pontuations, M));
+    DynamicIsland *islands;
+    islands = (DynamicIsland*)calloc(M, sizeof(DynamicIsland));
+    fillObjectDynamic(islands, costs, pontuations, M);
 
-    // TODO: calcular o número de dias.
-    // printMatrix(K, M + 1, N + 1);
+    knapSack(K, N, costs, pontuations, M, islands);
+
+    for (i = 0; i < M; i++) {
+        free(K[i]);
+    }
+    free(K);
 }
