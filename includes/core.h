@@ -34,3 +34,5 @@ void initGreedSolution(Island *islands, int N, int M, int *costs, int *pontuatio
 void fillObject(Island *islands, int *costs, int *pontuations, int size);
 // #2) Read all informations and calc solutions
 void initProgram (FILE *file);
+// #3) Calc average and standard deviation 
+void calcAndSaveTests(double *time, int N);

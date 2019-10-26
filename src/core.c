@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../includes/core.h"
+#include <time.h>
+#include <math.h>
 
+#define N_TESTS 20
 #define SIZE 500
 
 // ---------------------------- Init Dynamic Solution ---------------------------- //
@@ -136,6 +139,31 @@ void fillObject(Island *islands, int *costs, int *pontuations, int size) {
     }
 }
 
+void calcAndSaveTests(double *time, int N) {
+    int i;
+    double sum = 0.0, average, sd;
+
+    // Calc average
+    for (i = 0; i < N_TESTS; i++) {
+        sum += time[i];
+    }
+    average = sum / N_TESTS;
+
+    sum = 0.0;
+    // Calc standard deviation
+    for (i = 0; i < N_TESTS; i++) {
+        double sub = fabs(time[i] - average);
+        sum += pow(sub, 2);
+    }
+    sd = sqrt(sum / (N_TESTS - 1));
+
+    // Save data on file:
+    FILE *file = fopen("../tests/out-greedy.txt", "a+");
+    // FILE *file = fopen("../tests/out-dynamic.txt", "a+");
+    fprintf (file, "Número de ilhas %d - Média: %f - Desvio Padrão: %lf\n", N, average, sd);
+    fclose(file);
+}
+
 void initProgram (FILE *file) {
     // Read data:
 
@@ -153,9 +181,9 @@ void initProgram (FILE *file) {
         while (info != NULL) {
             if (charCtrl == 0) { // Max value to spend
                 N = atoi(info);
-                if (!N) { return; }
+                // if (!N) { return; }
             }
-            else if (charCtrl == 1) { // Númemro de ilhas
+            else if (charCtrl == 1) { // Number of islands
                 M = atoi(info);
                 if (!M) { return; }
                 costs = (int*)calloc(M, sizeof(int));
@@ -180,18 +208,33 @@ void initProgram (FILE *file) {
     int daysGreedy, pontuationGreedy;
     int daysDynamic, pontuationDynamic;
 
-    Island *islands;
-    islands = (Island*)calloc(M, sizeof(Island));
-    fillObject(islands, costs, pontuations, M);
+    double executionTime[N_TESTS];
+    int clk = 0;
+    for (clk = 0; clk < N_TESTS; clk++) {
+        clock_t tempoInicial;
+        clock_t tempoFinal;
+        tempoInicial = clock();
 
-    initDynamicSolution(islands, N, M, costs, pontuations, &daysDynamic, &pontuationDynamic);
-    initGreedSolution(islands, N, M, costs, pontuations, &daysGreedy, &pontuationGreedy);
+
+        Island *islands;
+        islands = (Island*)calloc(M, sizeof(Island));
+        fillObject(islands, costs, pontuations, M);
+
+        // initDynamicSolution(islands, N, M, costs, pontuations, &daysDynamic, &pontuationDynamic);
+        initGreedSolution(islands, N, M, costs, pontuations, &daysGreedy, &pontuationGreedy);
+
+        free(islands);
+        tempoFinal = clock();
+        executionTime[clk] = (tempoFinal- tempoInicial) * 1000.0 / CLOCKS_PER_SEC;
+
+    }
 
     printf("%d %d\n", pontuationGreedy, daysGreedy);
-    printf("%d %d\n", pontuationDynamic, daysDynamic);
+    // printf("%d %d\n", pontuationDynamic, daysDynamic);
+
+    calcAndSaveTests(executionTime, M);
 
     // Free memory
     free(costs);
     free(pontuations);
-    free(islands);
 }

@@ -1,5 +1,5 @@
 all: src/main.o src/core.o
-	gcc -O3 src/main.o src/core.o -o tp2
+	gcc -O3 src/main.o src/core.o -lm -o tp2
 	make clean
 	clear
 
