@@ -10,25 +10,29 @@
 
 // ---------------------------- Init Dynamic Solution ---------------------------- //
 
-int max(int a, int b) { return (a > b) ? a : b; }
-
-void knapSack(int **K, int W, int wt[], int val[], int n, Island *islands, int *daysDynamic, int *pontuationDynamic) {
+void calcDynamicTripInformations(int **K, int budget, int *costs, int *pontuations, int numberOfIslands, Island *islands, int *daysDynamic, int *pontuationDynamic) {
     int i, j, w;
 
-    for (i = 0; i <= n; i++) {
-        for (w = 0; w <= W; w++) {
+    // Mount the matrix of opt values
+    for (i = 0; i <= numberOfIslands; i++) {
+        for (w = 0; w <= budget; w++) {
             if (i == 0 || w == 0) {
                 K[i][w] = 0;
-            } else if (wt[i - 1] <= w) {
-                K[i][w] = max(val[i - 1] + K[i - 1][w - wt[i - 1]], K[i - 1][w]);
+            } else if (costs[i - 1] <= w) {
+                if (pontuations[i - 1] + K[i - 1][w - costs[i - 1]] > K[i - 1][w]) {
+                    K[i][w] = pontuations[i - 1] + K[i - 1][w - costs[i - 1]];
+                } else {
+                    K[i][w] = K[i - 1][w];
+                }
             } else {
                 K[i][w] = K[i - 1][w];
             }
         }
     }
 
-	i = n;
-	j = W;
+    // Find the number of days of the trip using backtracking:
+	i = numberOfIslands;
+	j = budget;
     int days = 0;
 	while(i >= 1) {
 		if(K[i][j] != K[i-1][j]) {
@@ -39,7 +43,7 @@ void knapSack(int **K, int W, int wt[], int val[], int n, Island *islands, int *
 	}
 
     *daysDynamic = days;
-    *pontuationDynamic = K[n][W];
+    *pontuationDynamic = K[numberOfIslands][budget];
 }
 
 void initDynamicSolution(Island *islands, int N, int M, int *costs, int *pontuations, int *daysDynamic, int *pontuationDynamic) {
@@ -49,7 +53,7 @@ void initDynamicSolution(Island *islands, int N, int M, int *costs, int *pontuat
     for (i = 0; i < M + 1; i++) 
         K[i] = (int*)calloc(N + 1, sizeof(int)); 
 
-    knapSack(K, N, costs, pontuations, M, islands, daysDynamic, pontuationDynamic);
+    calcDynamicTripInformations(K, N, costs, pontuations, M, islands, daysDynamic, pontuationDynamic);
 
     // Free matrix
     for (i = 0; i < M + 1; i++) {
@@ -62,54 +66,53 @@ void initDynamicSolution(Island *islands, int N, int M, int *costs, int *pontuat
 
 // ------------------------------ Init Greedy Solution ----------------------------- //
 
-void merge(Island *arr, int l, int m, int r) { 
-	int i, j, k; 
-	int n1 = m - l + 1; 
-	int n2 = r - m; 
+// Code developed from the data structure discipline material
+void merge(Island *islands, int l, int m, int r) { 
+	int i, j, k, arr1Ctrl = m - l + 1, arr2Ctlr = r - m;
+	Island L[arr1Ctrl], R[arr2Ctlr];
 
-	Island L[n1], R[n2]; 
+	for (i = 0; i < arr1Ctrl; i++) { L[i] = islands[l + i]; }
+	for (j = 0; j < arr2Ctlr; j++) { R[j] = islands[m + 1 + j]; }
 
-	for (i = 0; i < n1; i++) { L[i] = arr[l + i]; }
-	for (j = 0; j < n2; j++) { R[j] = arr[m + 1+ j]; }
+	i = 0;
+	j = 0;
+	k = l;
 
-	i = 0; 
-	j = 0; 
-	k = l; 
-	while (i < n1 && j < n2) { 
-		if (L[i].custoPerPontuation <= R[j].custoPerPontuation) { 
-			arr[k] = L[i]; 
-			i++; 
-		} 
-		else { 
-			arr[k] = R[j]; 
-			j++; 
-		} 
-		k++; 
-	} 
+	while (i < arr1Ctrl && j < arr2Ctlr) {
+		if (L[i].custoPerPontuation <= R[j].custoPerPontuation) {
+			islands[k] = L[i];
+			i++;
+		}
+		else {
+			islands[k] = R[j];
+			j++;
+		}
+		k++;
+	}
 
-	while (i < n1) { 
-		arr[k] = L[i]; 
-		i++; 
-		k++; 
-	} 
+	while (i < arr1Ctrl) {
+		islands[k] = L[i];
+		i++;
+		k++;
+	}
 
-	while (j < n2) { 
-		arr[k] = R[j]; 
-		j++; 
-		k++; 
-	} 
-} 
+	while (j < arr2Ctlr) {
+		islands[k] = R[j];
+		j++;
+		k++;
+	}
+}
 
 void mergeSort(Island *arr, int l, int r) { 
 	if (l < r) { 
-		int m = l+(r-l)/2; 
+		int m = l + (r - l) / 2; 
 		mergeSort(arr, l, m); 
-		mergeSort(arr, m+1, r); 
+		mergeSort(arr, m + 1, r); 
 		merge(arr, l, m, r); 
 	} 
 } 
 
-void calcTripInformations(Island *islands, int budget, int numberOfIslands, int *daysGreedy, int *pontuationsGreedy) {
+void calcGreedyTripInformations(Island *islands, int budget, int numberOfIslands, int *daysGreedy, int *pontuationsGreedy) {
     int pontuation = 0, days = 0, spent = 0, i;
 
     for (i = 0; i < numberOfIslands; i++) {
@@ -125,7 +128,7 @@ void calcTripInformations(Island *islands, int budget, int numberOfIslands, int 
 
 void initGreedSolution(Island *islands, int N, int M, int *costs, int *pontuations, int *daysGreedy, int *pontuationGreedy) {
 	mergeSort(islands, 0, M - 1); 
-    calcTripInformations(islands, N, M, daysGreedy, pontuationGreedy);
+    calcGreedyTripInformations(islands, N, M, daysGreedy, pontuationGreedy);
 } 
 
 // ---------------------------- Finish Greedy Solution ---------------------------- //
@@ -208,31 +211,32 @@ void initProgram (FILE *file) {
     int daysGreedy, pontuationGreedy;
     int daysDynamic, pontuationDynamic;
 
-    double executionTime[N_TESTS];
-    int clk = 0;
-    for (clk = 0; clk < N_TESTS; clk++) {
-        clock_t tempoInicial;
-        clock_t tempoFinal;
-        tempoInicial = clock();
+    // Algorithm to calc time execution: 
+    // double executionTime[N_TESTS];
+    // int clk = 0;
+    // for (clk = 0; clk < N_TESTS; clk++) {
+    //     clock_t tempoInicial;
+    //     clock_t tempoFinal;
+    //     tempoInicial = clock();
 
 
         Island *islands;
         islands = (Island*)calloc(M, sizeof(Island));
         fillObject(islands, costs, pontuations, M);
 
-        // initDynamicSolution(islands, N, M, costs, pontuations, &daysDynamic, &pontuationDynamic);
+        initDynamicSolution(islands, N, M, costs, pontuations, &daysDynamic, &pontuationDynamic);
         initGreedSolution(islands, N, M, costs, pontuations, &daysGreedy, &pontuationGreedy);
 
         free(islands);
-        tempoFinal = clock();
-        executionTime[clk] = (tempoFinal- tempoInicial) * 1000.0 / CLOCKS_PER_SEC;
 
-    }
+    //     tempoFinal = clock();
+    //     executionTime[clk] = (tempoFinal- tempoInicial) * 1000.0 / CLOCKS_PER_SEC;
+    // }
 
     printf("%d %d\n", pontuationGreedy, daysGreedy);
-    // printf("%d %d\n", pontuationDynamic, daysDynamic);
+    printf("%d %d\n", pontuationDynamic, daysDynamic);
 
-    calcAndSaveTests(executionTime, M);
+    // calcAndSaveTests(executionTime, M);
 
     // Free memory
     free(costs);
